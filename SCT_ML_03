@@ -1,1 +1,84 @@
+Task 03:
+Implement a support vector machine (SVM) to classify images of height and weight from the Kaggle dataset. 
+
+
+# Step 1 & 2: Imports
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+
+# Step 3: Load dataset
+df = pd.read_csv('weight_height_dataset.csv')
+
+# Preview
+print(df.head())
+print(df.columns)
+
+# Step 4: Select correct columns
+X = df[['Height(cm)', 'Weight(kg)']].values
+
+# Convert Class to numbers (multi-class)
+y = df['Class'].map({
+    'Underweight': 0,
+    'Normal': 1,
+    'Overweight': 2
+}).values
+
+# Step 5: Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+# Step 6: Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Step 7: Train SVM (use RBF for multi-class)
+model = svm.SVC(kernel='rbf')
+model.fit(X_train, y_train)
+
+# Step 8: Accuracy
+print("Accuracy:", model.score(X_test, y_test))
+
+# ================= GRAPH =================
+
+plt.figure(figsize=(8,6))
+
+# Scatter plot
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap='viridis', edgecolors='k')
+plt.xlabel("Height (cm)")
+plt.ylabel("Weight (kg)")
+plt.title("SVM Decision Boundary (Multi-class)")
+
+# Create grid
+ax = plt.gca()
+xlim = ax.get_xlim()
+ylim = ax.get_ylim()
+
+xx = np.linspace(xlim[0], xlim[1], 100)
+yy = np.linspace(ylim[0], ylim[1], 100)
+YY, XX = np.meshgrid(yy, xx)
+
+xy = np.vstack([XX.ravel(), YY.ravel()]).T
+xy_scaled = scaler.transform(xy)
+
+Z = model.predict(xy_scaled)
+Z = Z.reshape(XX.shape)
+
+# Plot decision regions
+plt.contourf(XX, YY, Z, alpha=0.3, cmap='viridis')
+
+plt.show()
+
+Output:
+    Height(cm)  Weight(kg)        Class
+0  171.408421   69.037935       Normal
+1  153.935688   47.797508  Underweight
+2  176.573961   78.871438   Overweight
+3  170.663093   70.263714       Normal
+4  164.009912   68.730922       Normal
+Index(['Height(cm)', 'Weight(kg)', 'Class'], dtype='object')
+Accuracy: 0.9666666666666667
 
